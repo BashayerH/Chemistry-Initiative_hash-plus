@@ -49,7 +49,8 @@ class _MyHomePageState extends State<MyHomePage> {
         
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text( 'حي الله المبرمجين',
+            const Text( 'عبدالاله',
+            
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
