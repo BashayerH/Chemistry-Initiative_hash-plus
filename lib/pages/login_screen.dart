@@ -1,7 +1,7 @@
+import 'package:chemistry_initiative/pages/home_page.dart';
 import 'package:flutter/material.dart';
-import '../../../../pages/main_layout.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/custom_textfield.dart';
+import '../features/auth/presentation/widgets/custom_button.dart';
+import '../features/auth/presentation/widgets/custom_textfield.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -125,10 +125,10 @@ class LoginScreen extends StatelessWidget {
                     CustomButton(
                       text: "تسجيل الدخول",
                       onTap: () {
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const MyHomePage(title: "عجائب"),
+                            builder: (context) =>  MyHomePage(title: "عجائب"),
                           ),
                         );
                         debugPrint("تم الضغط على دخول");
