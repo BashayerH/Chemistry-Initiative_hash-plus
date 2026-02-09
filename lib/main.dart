@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'features/auth/presentation/pages/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: LoginScreen(),
     );
   }
 }
@@ -48,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Mohameed',
+              'مبادرة هاش ',
               style: TextStyle(fontSize: 20, color: Colors.grey[700]),
             ),
           ],
