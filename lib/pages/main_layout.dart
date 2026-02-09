@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
-class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, this.title});
+
+  final String? title;
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0; // اكتشف افتراضيًا
 
   final List<Widget> _pages = const [
