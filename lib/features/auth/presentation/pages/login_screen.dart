@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../main.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
 
@@ -124,6 +125,12 @@ class LoginScreen extends StatelessWidget {
                     CustomButton(
                       text: "تسجيل الدخول",
                       onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>  MyHomePage(title: "عجائب"),
+                          ),
+                        );
                         debugPrint("تم الضغط على دخول");
                       },
                     ),
