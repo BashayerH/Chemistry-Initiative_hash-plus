@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:chemistry_initiative/pages/second_page.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  final bool showWelcome;
+  const HomePage({super.key, this.showWelcome = false});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _showWelcome = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _showWelcome = widget.showWelcome;
+    if (_showWelcome) {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _showWelcome = false);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +72,13 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               // أيقونة البروفايل + الاسم + أيقونة الإشعارات
               Row(
                 children: [
@@ -205,6 +226,29 @@ class HomePage extends StatelessWidget {
               horizontalList(dailyCards, darkBrown),
             ],
           ),
+        ),
+        // Welcome overlay
+            if (_showWelcome)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black45,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'أهلاً بك في عجائب الكيمياء',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

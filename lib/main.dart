@@ -1,7 +1,6 @@
-import 'package:chemistry_initiative/pages/home_page.dart';
-import 'package:chemistry_initiative/pages/second_page.dart';
 import 'package:chemistry_initiative/pages/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'theme_controller.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,13 +11,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Chemistry Initiative',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const LoginScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Chemistry Initiative',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
+          ),
+          themeMode: mode,
+          home: const LoginScreen(),
+        );
+      },
     );
   }
 }
