@@ -43,22 +43,13 @@ class _HomePageState extends State<HomePage> {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bookmark),
             label: 'Bookmark',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -110,160 +101,160 @@ class _HomePageState extends State<HomePage> {
     const lightBackground = Color(0xFFEDE6D9); // خلفية شريط التقدم
 
     return SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // أيقونة البروفايل + الاسم + أيقونة الإشعارات
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: softBrown,
-                    child: const Icon(Icons.person, color: Colors.white),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // أيقونة البروفايل + الاسم + أيقونة الإشعارات
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: softBrown,
+                  child: const Icon(Icons.person, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'مرحبا ريوف',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: darkBrown,
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'مرحبا ريوف',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: darkBrown,
-                    ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.notifications,
+                    color: softBrown,
+                    size: 28,
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.notifications,
-                      color: softBrown,
-                      size: 28,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
+            ),
 
-              const SizedBox(height: 35), // زيادة المسافة بين الابار والصورة
-              // الصورة الكبيرة مع العنوان وزر استكشف
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+            const SizedBox(height: 35), // زيادة المسافة بين الابار والصورة
+            // الصورة الكبيرة مع العنوان وزر استكشف
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
-                  Positioned(
-                    left: 16,
-                    bottom: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ظاهرة الشفق القطبي',
+                ),
+                Positioned(
+                  left: 16,
+                  bottom: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'ظاهرة الشفق القطبي',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 4,
+                              color: Colors.black54,
+                              offset: Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const QuestionPage(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: softBrown,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'استكشف أكثر',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 30,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 4,
-                                color: Colors.black54,
-                                offset: Offset(1, 1),
-                              ),
-                            ],
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const QuestionPage(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: softBrown,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 10,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'استكشف أكثر',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 25),
-
-              // شريط التقدم + النسبة
-              const Text(
-                'مستوى تقدمك',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: darkBrown,
                 ),
+              ],
+            ),
+            const SizedBox(height: 25),
+
+            // شريط التقدم + النسبة
+            const Text(
+              'مستوى تقدمك',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: darkBrown,
               ),
-              const SizedBox(height: 8),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: LinearProgressIndicator(
-                      value: progressValue,
-                      minHeight: 20,
-                      backgroundColor: lightBackground,
-                      color: darkBrown,
-                    ),
+            ),
+            const SizedBox(height: 8),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: LinearProgressIndicator(
+                    value: progressValue,
+                    minHeight: 20,
+                    backgroundColor: lightBackground,
+                    color: darkBrown,
                   ),
-                  Positioned.fill(
-                    child: Center(
-                      child: Text(
-                        '${(progressValue * 100).toInt()}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                ),
+                Positioned.fill(
+                  child: Center(
+                    child: Text(
+                      '${(progressValue * 100).toInt()}%',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 30),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
 
-              sectionTitle('الطبيعة', darkBrown),
-              horizontalList(natureCards, darkBrown),
+            sectionTitle('الطبيعة', darkBrown),
+            horizontalList(natureCards, darkBrown),
 
-              const SizedBox(height: 16),
-              sectionTitle('الماء والهواء', darkBrown),
-              horizontalList(waterCards, darkBrown),
+            const SizedBox(height: 16),
+            sectionTitle('الماء والهواء', darkBrown),
+            horizontalList(waterCards, darkBrown),
 
-              const SizedBox(height: 16),
-              sectionTitle('الحياة اليومية', darkBrown),
-              horizontalList(dailyCards, darkBrown),
-            ],
-          ),
+            const SizedBox(height: 16),
+            sectionTitle('الحياة اليومية', darkBrown),
+            horizontalList(dailyCards, darkBrown),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Widget sectionTitle(String title, Color color) {

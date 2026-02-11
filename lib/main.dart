@@ -1,7 +1,8 @@
-import 'package:chemistry_initiative/pages/home_page.dart';
-import 'package:chemistry_initiative/pages/second_page.dart';
 import 'package:chemistry_initiative/pages/login_screen.dart';
 import 'package:flutter/material.dart';
+
+// Global theme controller used by screens
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
 void main() {
   runApp(const MyApp());

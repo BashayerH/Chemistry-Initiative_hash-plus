@@ -1,0 +1,547 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../main.dart';
+import 'edit_profile_screen.dart';
+import 'l10n/locale_provider.dart';
+import 'l10n/app_localizations.dart';
+
+// -----------------------------------------------------------------------------
+// MODELS & STATE MANAGEMENT
+// -----------------------------------------------------------------------------
+
+class UserProfile {
+  final String name;
+  // final String role;
+  final String bio;
+  final String email;
+  final String phone;
+  final String location;
+  final String imageUrl;
+
+  UserProfile({
+    required this.name,
+    //required this.role,
+    required this.bio,
+    required this.email,
+    required this.phone,
+    required this.location,
+    required this.imageUrl,
+  });
+
+  UserProfile copyWith({
+    String? name,
+    //String? role,
+    String? bio,
+    String? email,
+    String? phone,
+    String? location,
+    String? imageUrl,
+  }) {
+    return UserProfile(
+      name: name ?? this.name,
+      // role: role ?? this.role,
+      bio: bio ?? this.bio,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      location: location ?? this.location,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
+  }
+}
+
+final userProfileProvider = Provider<ValueNotifier<UserProfile>>((ref) {
+  return ValueNotifier<UserProfile>(
+    UserProfile(
+      name: 'Alex Johnson',
+      bio:
+          'Passionate about building beautiful mobile experiences. Loves Dart, clean architecture, and modern UI design.',
+      email: 'alex.dev@example.com',
+      phone: '+1 (415) 555-0199',
+      location: 'San Francisco, CA',
+      imageUrl: 'https://i.pravatar.cc/300',
+    ),
+  );
+});
+
+// -----------------------------------------------------------------------------
+// PROFILE SCREEN (Sliver Layout)
+// -----------------------------------------------------------------------------
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final userProfileNotifier = ref.watch(userProfileProvider);
+    final userProfile = userProfileNotifier.value;
+    final localizationAsync = ref.watch(localizationProvider);
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: localizationAsync.when(
+        data: (localizations) {
+          return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _ProfileSliverAppBar(
+                userProfile: userProfile,
+                localizations: localizations,
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      _SectionHeader(title: localizations.contactInfo),
+                      const SizedBox(height: 10),
+                      _ContactInfoSection(
+                        userProfile: userProfile,
+                        localizations: localizations,
+                      ),
+                      const SizedBox(height: 30),
+                      _SectionHeader(title: localizations.settings),
+                      const SizedBox(height: 10),
+                      _SettingsSection(localizations: localizations),
+                      const SizedBox(height: 40),
+                      _ActionButtons(localizations: localizations),
+                      const SizedBox(height: 50),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// WIDGETS
+// -----------------------------------------------------------------------------
+
+class _ProfileSliverAppBar extends StatelessWidget {
+  final UserProfile userProfile;
+  final AppLocalizations localizations;
+  const _ProfileSliverAppBar({
+    required this.userProfile,
+    required this.localizations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return SliverAppBar(
+      expandedHeight: 320,
+      pinned: true,
+      stretch: true,
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface.withValues(alpha: 0.3),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.edit_rounded, size: 20),
+            tooltip: localizations.editProfile,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      EditProfileScreen(currentThemeMode: themeNotifier.value),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+      backgroundColor: colorScheme.surface,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: Stack(
+          alignment: Alignment.center,
+          fit: StackFit.expand,
+          children: [
+            // Gradient Background
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isDark
+                      ? [const Color(0xFF2A2831), const Color(0xFF1D1B20)]
+                      : [const Color(0xFFF3EDF7), const Color(0xFFFFFFFF)],
+                ),
+              ),
+            ),
+
+            // Decorative shapes
+            Positioned(
+              top: -50,
+              right: -50,
+              child: CircleAvatar(
+                radius: 130,
+                backgroundColor: colorScheme.primary.withValues(alpha: 0.05),
+              ),
+            ),
+            Positioned(
+              bottom: 50,
+              left: -30,
+              child: CircleAvatar(
+                radius: 80,
+                backgroundColor: colorScheme.secondary.withValues(alpha: 0.05),
+              ),
+            ),
+
+            // Profile Content
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 40),
+                // Avatar with Glow
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(alpha: 0.5),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 65,
+                    backgroundImage: NetworkImage(
+                      userProfile.imageUrl,
+                    ), // Replace with asset if needed
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  userProfile.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                // Text(
+                //   //userProfile.role,
+                //   style: GoogleFonts.poppins(
+                //     fontSize: 16,
+                //     color: colorScheme.primary,
+                //     fontWeight: FontWeight.w500,
+                //   ),
+                // ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondaryContainer.withValues(
+                      alpha: 0.5,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    userProfile.bio,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title.toUpperCase(),
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1.5,
+        color: Theme.of(context).colorScheme.outline,
+      ),
+    );
+  }
+}
+
+class _ContactInfoSection extends StatelessWidget {
+  final UserProfile userProfile;
+  final AppLocalizations localizations;
+  const _ContactInfoSection({
+    required this.userProfile,
+    required this.localizations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _SettingsTile(
+          icon: FontAwesomeIcons.solidEnvelope,
+          title: localizations.email,
+          subtitle: userProfile.email,
+          isLink: true,
+        ),
+        const SizedBox(height: 12),
+        _SettingsTile(
+          icon: FontAwesomeIcons.phone,
+          title: localizations.phone,
+          subtitle: userProfile.phone,
+          isLink: true,
+        ),
+        const SizedBox(height: 12),
+        _SettingsTile(
+          icon: FontAwesomeIcons.locationDot,
+          title: localizations.location,
+          subtitle: userProfile.location,
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsSection extends ConsumerWidget {
+  final AppLocalizations localizations;
+  const _SettingsSection({required this.localizations});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final localeNotifier = ref.watch(localeProvider);
+    final locale = localeNotifier.value;
+    return Column(
+      children: [
+        // Language Switcher
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                FontAwesomeIcons.globe,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                size: 18,
+              ),
+            ),
+            title: Text(localizations.language),
+            trailing: DropdownButton<String>(
+              value: locale.languageCode,
+              underline: const SizedBox(),
+              items: [
+                DropdownMenuItem(
+                  value: 'en',
+                  child: Text(localizations.englishLabel),
+                ),
+                DropdownMenuItem(
+                  value: 'ar',
+                  child: Text(localizations.arabicLabel),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(localeProvider).value = Locale(value);
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Theme Switcher
+        ValueListenableBuilder<ThemeMode>(
+          valueListenable: themeNotifier,
+          builder: (context, mode, child) {
+            final isDark =
+                mode == ThemeMode.dark ||
+                (mode == ThemeMode.system &&
+                    MediaQuery.platformBrightnessOf(context) ==
+                        Brightness.dark);
+            return Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    isDark ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    size: 18,
+                  ),
+                ),
+                title: Text(localizations.theme),
+                trailing: Switch.adaptive(
+                  value: mode == ThemeMode.dark,
+                  onChanged: (value) {
+                    themeNotifier.value = value
+                        ? ThemeMode.dark
+                        : ThemeMode.light;
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        const _SettingsTile(
+          icon: FontAwesomeIcons.bell,
+          title: 'Notifications',
+          hasSwitch: true,
+        ),
+        const SizedBox(height: 12),
+        const _SettingsTile(
+          icon: FontAwesomeIcons.shieldHalved,
+          title: 'Privacy & Security',
+        ),
+        const SizedBox(height: 12),
+        const _SettingsTile(
+          icon: FontAwesomeIcons.circleQuestion,
+          title: 'Help & Support',
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsTile extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final bool isLink;
+  final bool hasSwitch;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.isLink = false,
+    this.hasSwitch = false,
+  });
+
+  @override
+  State<_SettingsTile> createState() => _SettingsTileState();
+}
+
+class _SettingsTileState extends State<_SettingsTile> {
+  bool _switchValue = true; // Local state for interactive demo
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            widget.icon,
+            color: colorScheme.onSurfaceVariant,
+            size: 18,
+          ),
+        ),
+        title: Text(
+          widget.title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: widget.subtitle != null ? Text(widget.subtitle!) : null,
+        trailing: widget.hasSwitch
+            ? Switch.adaptive(
+                value: _switchValue,
+                onChanged: (v) {
+                  setState(() {
+                    _switchValue = v;
+                  });
+                },
+              )
+            : Icon(
+                Icons.arrow_forward_ios,
+                size: 14,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+        onTap: () {
+          // Add URL launching logic here if needed
+          if (widget.hasSwitch) {
+            setState(() {
+              _switchValue = !_switchValue;
+            });
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _ActionButtons extends StatelessWidget {
+  final AppLocalizations localizations;
+  const _ActionButtons({required this.localizations});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+              foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 0,
+            ),
+            icon: const Icon(FontAwesomeIcons.arrowRightFromBracket, size: 18),
+            label: Text(localizations.logout),
+          ),
+        ),
+      ],
+    );
+  }
+}
