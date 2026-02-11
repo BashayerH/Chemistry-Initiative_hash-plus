@@ -80,11 +80,12 @@ class ProfileScreen extends ConsumerWidget {
     final userProfile = userProfileNotifier.value;
     final localizationAsync = ref.watch(localizationProvider);
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: localizationAsync.when(
-        data: (localizations) {
-          return CustomScrollView(
+    return localizationAsync.when(
+      data: (localizations) => Directionality(
+        textDirection: localizations.textDirection,
+        child: Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               _ProfileSliverAppBar(
@@ -116,11 +117,11 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
             ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
+        ),
       ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
 }
@@ -292,7 +293,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      title.toUpperCase(),
+      title,
       style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.bold,
@@ -345,49 +346,8 @@ class _SettingsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final localeNotifier = ref.watch(localeProvider);
-    final locale = localeNotifier.value;
     return Column(
       children: [
-        // Language Switcher
-        Card(
-          margin: EdgeInsets.zero,
-          child: ListTile(
-            leading: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                FontAwesomeIcons.globe,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                size: 18,
-              ),
-            ),
-            title: Text(localizations.language),
-            trailing: DropdownButton<String>(
-              value: locale.languageCode,
-              underline: const SizedBox(),
-              items: [
-                DropdownMenuItem(
-                  value: 'en',
-                  child: Text(localizations.englishLabel),
-                ),
-                DropdownMenuItem(
-                  value: 'ar',
-                  child: Text(localizations.arabicLabel),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(localeProvider).value = Locale(value);
-                }
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
         // Theme Switcher
         ValueListenableBuilder<ThemeMode>(
           valueListenable: themeNotifier,
@@ -426,20 +386,20 @@ class _SettingsSection extends ConsumerWidget {
           },
         ),
         const SizedBox(height: 12),
-        const _SettingsTile(
+        _SettingsTile(
           icon: FontAwesomeIcons.bell,
-          title: 'Notifications',
+          title: localizations.notifications,
           hasSwitch: true,
         ),
         const SizedBox(height: 12),
-        const _SettingsTile(
+        _SettingsTile(
           icon: FontAwesomeIcons.shieldHalved,
-          title: 'Privacy & Security',
+          title: localizations.privacySecurity,
         ),
         const SizedBox(height: 12),
-        const _SettingsTile(
+        _SettingsTile(
           icon: FontAwesomeIcons.circleQuestion,
-          title: 'Help & Support',
+          title: localizations.helpSupport,
         ),
       ],
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chemistry_initiative/pages/second_page.dart';
+import 'package:chemistry_initiative/pages/profile_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,7 +21,7 @@ class _HomePageState extends State<HomePage> {
       case 2:
         return const Center(child: Text('Bookmark'));
       case 3:
-        return const Center(child: Text('Profile'));
+        return const ProfileScreen();
       default:
         return _buildHomeContent();
     }

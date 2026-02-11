@@ -4,19 +4,28 @@ class AppLocalizations {
   final Locale locale;
   AppLocalizations([this.locale = const Locale('en')]);
 
-  String get contactInfo => 'Contact Info';
-  String get settings => 'Settings';
-  String get editProfile => 'Edit Profile';
-  String get email => 'Email';
-  String get phone => 'Phone';
-  String get location => 'Location';
-  String get language => 'Language';
-  String get englishLabel => 'English';
-  String get arabicLabel => 'Arabic';
-  String get theme => 'Theme';
-  String get logout => 'Logout';
-  String get save => 'Save';
-  String get profileUpdated => 'Profile updated';
-  String get name => 'Name';
-  String get bio => 'Bio';
+  bool get isArabic => locale.languageCode == 'ar';
+  TextDirection get textDirection =>
+      isArabic ? TextDirection.rtl : TextDirection.ltr;
+
+  String get contactInfo => isArabic ? 'معلومات الاتصال' : 'Contact Info';
+  String get settings => isArabic ? 'الإعدادات' : 'Settings';
+  String get editProfile => isArabic ? 'تعديل الملف الشخصي' : 'Edit Profile';
+  String get email => isArabic ? 'البريد الإلكتروني' : 'Email';
+  String get phone => isArabic ? 'الهاتف' : 'Phone';
+  String get location => isArabic ? 'الموقع' : 'Location';
+  String get language => isArabic ? 'اللغة' : 'Language';
+  String get englishLabel => isArabic ? 'الإنجليزية' : 'English';
+  String get arabicLabel => isArabic ? 'العربية' : 'Arabic';
+  String get theme => isArabic ? 'المظهر' : 'Theme';
+  String get logout => isArabic ? 'تسجيل الخروج' : 'Logout';
+  String get save => isArabic ? 'حفظ' : 'Save';
+  String get profileUpdated =>
+      isArabic ? 'تم تحديث الملف الشخصي' : 'Profile updated';
+  String get name => isArabic ? 'الاسم' : 'Name';
+  String get bio => isArabic ? 'نبذة' : 'Bio';
+  String get notifications => isArabic ? 'الإشعارات' : 'Notifications';
+  String get privacySecurity =>
+      isArabic ? 'الخصوصية والأمان' : 'Privacy & Security';
+  String get helpSupport => isArabic ? 'المساعدة والدعم' : 'Help & Support';
 }
