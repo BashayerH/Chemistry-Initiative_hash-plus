@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:chemistry_initiative/pages/second_page.dart';
-import 'package:chemistry_initiative/pages/profile_screen.dart';
-import 'package:chemistry_initiative/pages/search_screen.dart';
-import 'package:chemistry_initiative/pages/bookmark_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chemistry_initiative/features/auth/data/current_user_provider.dart';
+import 'package:chemistry_initiative/features/discovery/presentation/pages/question_page.dart';
+import 'package:chemistry_initiative/features/search/presentation/pages/search_screen.dart';
+import 'package:chemistry_initiative/features/bookmark/presentation/pages/bookmark_screen.dart';
+import 'package:chemistry_initiative/features/profile/presentation/pages/profile_screen.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   final bool showWelcome;
   const HomePage({super.key, this.showWelcome = false});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   int _currentIndex = 0;
   bool _showWelcome = false;
 
@@ -22,7 +24,10 @@ class _HomePageState extends State<HomePage> {
     _showWelcome = widget.showWelcome;
     if (_showWelcome) {
       Future.delayed(const Duration(seconds: 3), () {
-        if (mounted) setState(() => _showWelcome = false);
+        if (mounted) {
+          setState(() => _showWelcome = false);
+          showWelcomeNotifier.value = false;
+        }
       });
     }
   }
@@ -50,9 +55,9 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFFF9F4EA), // OYSTER
-        selectedItemColor: const Color(0xFFC47457), // TERRACOTTA
-        unselectedItemColor: const Color(0xFF9C9E80), // SAGE
+        backgroundColor: const Color(0xFFF9F4EA),
+        selectedItemColor: const Color(0xFFC47457),
+        unselectedItemColor: const Color(0xFF9C9E80),
         onTap: (index) {
           setState(() {
             _currentIndex = index;
@@ -72,7 +77,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHomeContent() {
-    final double progressValue = 0.6;
+    const double progressValue = 0.6;
+    final user = ref.watch(currentUserNotifierProvider);
 
     final List<Map<String, String>> natureCards = [
       {'image': 'assets/images/download (4).jpg', 'title': 'احتراق الغازات'},
@@ -111,10 +117,9 @@ class _HomePageState extends State<HomePage> {
       },
     ];
 
-    // ألوان
-    const darkBrown = Color(0xFF5A3E2B); // نصوص داكنة وعناوين الأقسام
-    const softBrown = Color(0xFF8C6B4F); // الأيقونات وزر الاستكشاف
-    const lightBackground = Color(0xFFEDE6D9); // خلفية شريط التقدم
+    const darkBrown = Color(0xFF5A3E2B);
+    const softBrown = Color(0xFF8C6B4F);
+    const lightBackground = Color(0xFFEDE6D9);
 
     return SafeArea(
       child: Stack(
@@ -124,7 +129,6 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // أيقونة البروفايل + الاسم + أيقونة الإشعارات
                 Row(
                   children: [
                     CircleAvatar(
@@ -133,28 +137,20 @@ class _HomePageState extends State<HomePage> {
                       child: const Icon(Icons.person, color: Colors.white),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'مرحبا ريوف',
-                      style: TextStyle(
+                    Text(
+                      'مرحبا ${user?.name ?? 'مستخدم'}',
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: darkBrown,
                       ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.notifications,
-                        color: softBrown,
-                        size: 28,
-                      ),
-                    ),
+                  
                   ],
                 ),
 
                 const SizedBox(height: 35),
-                // الصورة الكبيرة مع العنوان وزر استكشف
                 Stack(
                   children: [
                     ClipRRect(
@@ -193,7 +189,10 @@ class _HomePageState extends State<HomePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const QuestionPage(),
+                                  builder: (context) => QuestionPage(
+                                    image: 'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
+                                    title: 'ظاهرة الشفق القطبي',
+                                  ),
                                 ),
                               );
                             },
@@ -223,7 +222,6 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 25),
 
-                // شريط التقدم + النسبة
                 const Text(
                   'مستوى تقدمك',
                   style: TextStyle(
@@ -272,7 +270,6 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          // Welcome overlay
           if (_showWelcome)
             Positioned.fill(
               child: Container(
@@ -321,41 +318,55 @@ class _HomePageState extends State<HomePage> {
         scrollDirection: Axis.horizontal,
         itemCount: cards.length,
         itemBuilder: (context, index) {
-          return Container(
-            width: 140,
-            margin: const EdgeInsets.only(right: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      image: DecorationImage(
-                        image: AssetImage(cards[index]['image']!),
-                        fit: BoxFit.cover,
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromARGB(80, 0, 0, 0),
-                          blurRadius: 4,
-                          offset: Offset(2, 2),
+          final card = cards[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuestionPage(
+                    image: card['image']!,
+                    title: card['title']!,
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              width: 140,
+              margin: const EdgeInsets.only(right: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        image: DecorationImage(
+                          image: AssetImage(card['image']!),
+                          fit: BoxFit.cover,
                         ),
-                      ],
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromARGB(80, 0, 0, 0),
+                            blurRadius: 4,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  cards[index]['title']!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
-                    color: textColor,
+                  const SizedBox(height: 6),
+                  Text(
+                    card['title']!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                      color: textColor,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

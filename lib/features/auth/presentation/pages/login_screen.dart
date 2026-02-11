@@ -1,18 +1,19 @@
-import 'package:chemistry_initiative/pages/home_page.dart';
-import '../features/auth/auth_service.dart';
-import '../theme_controller.dart';
 import 'package:flutter/material.dart';
-import '../features/auth/presentation/widgets/custom_button.dart';
-import '../features/auth/presentation/widgets/custom_textfield.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chemistry_initiative/core/theme/theme_controller.dart';
+import 'package:chemistry_initiative/shared/widgets/custom_button.dart';
+import 'package:chemistry_initiative/shared/widgets/custom_textfield.dart';
+import 'package:chemistry_initiative/features/auth/data/auth_repository.dart';
+import 'package:chemistry_initiative/features/auth/data/current_user_provider.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
   final TextEditingController _nameCtrl = TextEditingController();
@@ -20,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _isSignup = false;
+  final _authRepo = AuthRepository.instance;
 
   @override
   void dispose() {
@@ -53,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-              // 1. الشعار والعنوان العلوي
               const CircleAvatar(
                 radius: 30,
                 backgroundColor: Colors.purpleAccent,
@@ -70,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // 2. الكارد (المربع الأبيض)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(25),
@@ -87,7 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Column(
                   children: [
-                    // تبديل (تسجيل دخول - حساب جديد)
                     Container(
                       decoration: BoxDecoration(
                         color: isLight ? Colors.grey[100] : Colors.grey[800],
@@ -148,7 +147,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 18),
 
-                    // form
                     Form(
                       key: _formKey,
                       child: Column(
@@ -208,7 +206,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               final email = _emailCtrl.text.trim();
                               final pass = _passCtrl.text;
                               final messenger = ScaffoldMessenger.of(context);
-                              final navigator = Navigator.of(context);
 
                               if (_isSignup) {
                                 final name = _nameCtrl.text.trim();
@@ -221,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   messenger.showSnackBar(const SnackBar(content: Text('كلمة المرور غير متطابقة')));
                                   return;
                                 }
-                                final err = await AuthService.registerUser(name, email, pass);
+                                final err = await _authRepo.registerUser(name, email, pass);
                                 if (!mounted) return;
                                 if (err != null) {
                                   messenger.showSnackBar(SnackBar(content: Text(err)));
@@ -232,23 +229,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return;
                               }
 
-                              // Login flow
                               if (email.isEmpty || pass.isEmpty) {
                                 messenger.showSnackBar(const SnackBar(content: Text('يرجى إدخال البريد وكلمة المرور')));
                                 return;
                               }
                               messenger.showSnackBar(const SnackBar(content: Text('جاري التحقق...')));
-                              final ok = await AuthService.loginUser(email, pass);
+                              final ok = await _authRepo.loginUser(email, pass);
                               if (!mounted) return;
                               if (!ok) {
                                 messenger.showSnackBar(const SnackBar(content: Text('بيانات الدخول غير صحيحة')));
                                 return;
                               }
-                              navigator.pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (context) => const HomePage(showWelcome: true),
-                                ),
-                              );
+                              ref.read(currentUserNotifierProvider.notifier).refresh();
+                              showWelcomeNotifier.value = true;
                             },
                           ),
                         ],
@@ -262,7 +255,6 @@ class _LoginScreenState extends State<LoginScreen> {
               const Center(child: Text('أو', style: TextStyle(color: Colors.grey))),
               const SizedBox(height: 12),
 
-              // أزرار جوجل وفيسبوك
               socialButton("متابعة مع جوجل", Icons.g_mobiledata, Colors.red),
               const SizedBox(height: 10),
               socialButton("متابعة مع فيسبوك", Icons.facebook, Colors.blue),
@@ -273,7 +265,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ويدجت صغير لأزرار التواصل الاجتماعي
   Widget socialButton(String text, IconData icon, Color color) {
     return Container(
       width: 300,

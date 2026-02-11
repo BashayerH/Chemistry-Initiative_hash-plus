@@ -1,35 +1,43 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chemistry_initiative/features/bookmark/data/bookmark_provider.dart';
+import 'package:chemistry_initiative/features/home/presentation/pages/home_page.dart';
 
-class QuestionPage extends StatelessWidget {
-  const QuestionPage({super.key});
+class QuestionPage extends ConsumerWidget {
+  final String image;
+  final String title;
+
+  const QuestionPage({
+    super.key,
+    this.image = "assets/images/download (9).jpg",
+    this.title = "ظاهرة الشفق القطبي",
+  });
 
   @override
-  Widget build(BuildContext context) {
-    const Color darkBrown = Color(0xFF5C4033); // بني غامق
+  Widget build(BuildContext context, WidgetRef ref) {
+    const Color darkBrown = Color(0xFF5C4033);
+    final topic = {'image': image, 'title': title};
 
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
       body: SafeArea(
         child: Column(
           children: [
-            /// 🔹 الصورة الكبيرة
             Container(
               height: 260,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(50),
                   bottomRight: Radius.circular(50),
                 ),
                 image: DecorationImage(
-                  image: AssetImage("assets/images/download (9).jpg"),
+                  image: AssetImage(image),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
 
-            /// 🔹 المحتوى
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -40,7 +48,6 @@ class QuestionPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   textDirection: TextDirection.rtl,
                   children: [
-                    /// السؤال مباشرة تحت الصورة
                     const SizedBox(height: 15),
                     Text(
                       "هل تساءلت يوماً لماذا تتلألأ السماء بألوان الشفق القطبي؟",
@@ -49,13 +56,12 @@ class QuestionPage extends StatelessWidget {
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: darkBrown,
-                        fontFamily: 'Cairo', // خط مرتب وجميل
+                        fontFamily: 'Cairo',
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    /// الشرح العلمي بالعربي
                     const Text(
                       "الشفق القطبي يحدث عندما تصطدم جسيمات مشحونة من الشمس بالغازات في الغلاف الجوي للأرض، مثل الأكسجين والنيتروجين. هذه الاصطدامات تثير الذرات والجزيئات وتمنحها طاقة إضافية.\n"
                       "• الأكسجين على ارتفاع منخفض يعطي ضوءاً أخضر\n"
@@ -72,12 +78,10 @@ class QuestionPage extends StatelessWidget {
 
                     const Spacer(),
 
-                    /// 🔹 الأزرار متساوية الحجم ومرفوعة شوي
                     Padding(
                       padding: const EdgeInsets.only(bottom: 25),
                       child: Row(
                         children: [
-                          /// زر العودة (نص بني، خلفية أبيض مع حدود بنية، أيقونة بعد النص)
                           Expanded(
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -118,7 +122,6 @@ class QuestionPage extends StatelessWidget {
 
                           const SizedBox(width: 15),
 
-                          /// زر البوك مارك (نص أبيض، خلفية بني غامق، أيقونة بعد النص)
                           Expanded(
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -131,6 +134,7 @@ class QuestionPage extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
+                                ref.read(bookmarkProvider.notifier).add(topic);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text("تم الإضافة إلى المفضلة"),

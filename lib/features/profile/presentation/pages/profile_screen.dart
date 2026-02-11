@@ -1,106 +1,44 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../main.dart';
-import 'edit_profile_screen.dart';
-import 'l10n/locale_provider.dart';
-import 'l10n/app_localizations.dart';
+import 'package:chemistry_initiative/core/theme/theme_controller.dart';
+import 'package:chemistry_initiative/core/constants/app_colors.dart';
+import 'package:chemistry_initiative/core/l10n/app_localizations.dart';
+import 'package:chemistry_initiative/core/l10n/locale_provider.dart';
+import 'package:chemistry_initiative/core/database/models/user_model.dart';
+import 'package:chemistry_initiative/features/auth/data/auth_repository.dart';
+import 'package:chemistry_initiative/features/auth/data/current_user_provider.dart';
+import 'package:chemistry_initiative/features/profile/data/profile_repository.dart';
+import 'package:chemistry_initiative/features/profile/presentation/pages/edit_profile_screen.dart';
 
-// Color system (Design tokens)
-const Color kTruffle = Color(0xFF605F4B); // Primary
-const Color kOyster = Color(0xFFF9F4EA); // Background
-const Color kSand = Color(0xFFCDAD85); // Cards / highlights
-const Color kSage = Color(0xFF9C9E80); // Borders / muted
-const Color kTerracotta = Color(0xFFC47457); // Accent / CTA
-const Color kCopper = Color(0xFFB68036); // Accent / progress
-
-// -----------------------------------------------------------------------------
-// MODELS & STATE MANAGEMENT
-// -----------------------------------------------------------------------------
-
-class UserProfile {
-  final String name;
-  // final String role;
-  final String bio;
-  final String email;
-  final String phone;
-  final String location;
-  final String imageUrl;
-
-  UserProfile({
-    required this.name,
-    //required this.role,
-    required this.bio,
-    required this.email,
-    required this.phone,
-    required this.location,
-    required this.imageUrl,
-  });
-
-  UserProfile copyWith({
-    String? name,
-    //String? role,
-    String? bio,
-    String? email,
-    String? phone,
-    String? location,
-    String? imageUrl,
-  }) {
-    return UserProfile(
-      name: name ?? this.name,
-      // role: role ?? this.role,
-      bio: bio ?? this.bio,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      location: location ?? this.location,
-      imageUrl: imageUrl ?? this.imageUrl,
-    );
-  }
-}
-
-final userProfileProvider = Provider<ValueNotifier<UserProfile>>((ref) {
-  return ValueNotifier<UserProfile>(
-    UserProfile(
-      name: 'أحمد علي',
-      bio:
-          '  مستكشف/ة فضولي/ة ',
-      email: 'ahmed.ali@example.com',
-      phone: '+966 5 5555 5555',
-      location: 'الرياض، المملكة العربية السعودية',
-      imageUrl: 'https://i.pravatar.cc/300',
-    ),
-  );
-});
-
-// -----------------------------------------------------------------------------
-// PROFILE SCREEN (Sliver Layout)
-// -----------------------------------------------------------------------------
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userProfileNotifier = ref.watch(userProfileProvider);
-    final userProfile = userProfileNotifier.value;
+    final user = ref.watch(currentUserNotifierProvider);
     final localizationAsync = ref.watch(localizationProvider);
+
+    if (user == null) {
+      return const Center(child: Text('يرجى تسجيل الدخول'));
+    }
 
     return localizationAsync.when(
       data: (localizations) {
-        // Force Arabic only for this page
         final localizationsAr = AppLocalizations(const Locale('ar'));
         return Directionality(
           textDirection: localizationsAr.textDirection,
           child: Scaffold(
             backgroundColor: Theme.of(context).brightness == Brightness.dark
                 ? const Color(0xFF1D1B20)
-                : kOyster,
+                : AppColors.oyster,
             body: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
                 _ProfileSliverAppBar(
-                  userProfile: userProfile,
+                  user: user,
                   localizations: localizationsAr,
                 ),
                 SliverToBoxAdapter(
@@ -113,7 +51,7 @@ class ProfileScreen extends ConsumerWidget {
                         _SectionHeader(title: localizationsAr.contactInfo),
                         const SizedBox(height: 10),
                         _ContactInfoSection(
-                          userProfile: userProfile,
+                          user: user,
                           localizations: localizationsAr,
                         ),
                         const SizedBox(height: 30),
@@ -121,7 +59,7 @@ class ProfileScreen extends ConsumerWidget {
                         const SizedBox(height: 10),
                         _SettingsSection(localizations: localizationsAr),
                         const SizedBox(height: 40),
-                        _ActionButtons(localizations: localizationsAr),
+                        _ActionButtons(localizations: localizationsAr, user: user),
                         const SizedBox(height: 50),
                       ],
                     ),
@@ -138,15 +76,21 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// -----------------------------------------------------------------------------
-// WIDGETS
-// -----------------------------------------------------------------------------
+ImageProvider _avatarImageProvider(String imageUrl) {
+  if (imageUrl.startsWith('assets/')) {
+    return AssetImage(imageUrl);
+  }
+  if (imageUrl.startsWith('http')) {
+    return AssetImage('assets/images/avatar.jpg'); // Network blocked; use local fallback
+  }
+  return FileImage(File(imageUrl));
+}
 
 class _ProfileSliverAppBar extends StatelessWidget {
-  final UserProfile userProfile;
+  final UserModel user;
   final AppLocalizations localizations;
   const _ProfileSliverAppBar({
-    required this.userProfile,
+    required this.user,
     required this.localizations,
   });
 
@@ -188,7 +132,6 @@ class _ProfileSliverAppBar extends StatelessWidget {
           alignment: Alignment.center,
           fit: StackFit.expand,
           children: [
-            // Gradient Background
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -200,8 +143,6 @@ class _ProfileSliverAppBar extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Decorative shapes
             Positioned(
               top: -50,
               right: -50,
@@ -218,24 +159,21 @@ class _ProfileSliverAppBar extends StatelessWidget {
                 backgroundColor: colorScheme.secondary.withValues(alpha: 0.05),
               ),
             ),
-
-            // Profile Content
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-                // Avatar with Glow
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: kTruffle.withAlpha(128),
+                      color: AppColors.truffle.withAlpha(128),
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: kTruffle.withAlpha(51),
+                        color: AppColors.truffle.withAlpha(51),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -243,29 +181,19 @@ class _ProfileSliverAppBar extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: 65,
-                    backgroundImage: NetworkImage(
-                      userProfile.imageUrl,
-                    ), // Replace with asset if needed
+                    backgroundImage: _avatarImageProvider(user.imageUrl),
                     backgroundColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  userProfile.name,
-                  style: GoogleFonts.poppins(
+                  user.name,
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : kTruffle,
+                    color: isDark ? Colors.white : AppColors.truffle,
                   ),
                 ),
-                // Text(
-                //   //userProfile.role,
-                //   style: GoogleFonts.poppins(
-                //     fontSize: 16,
-                //     color: colorScheme.primary,
-                //     fontWeight: FontWeight.w500,
-                //   ),
-                // ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -273,17 +201,17 @@ class _ProfileSliverAppBar extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: kSand.withAlpha(128),
+                    color: AppColors.sand.withAlpha(128),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    userProfile.bio,
+                    user.bio.isEmpty ? 'مستكشف فضولي' : user.bio,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? Colors.white70 : kTruffle.withAlpha(230),
+                      color: isDark ? Colors.white70 : AppColors.truffle.withAlpha(230),
                     ),
                   ),
                 ),
@@ -309,17 +237,17 @@ class _SectionHeader extends StatelessWidget {
         fontSize: 12,
         fontWeight: FontWeight.bold,
         letterSpacing: 1.5,
-        color: isDark ? Colors.grey[400] : kSage,
+        color: isDark ? Colors.grey[400] : AppColors.sage,
       ),
     );
   }
 }
 
 class _ContactInfoSection extends ConsumerWidget {
-  final UserProfile userProfile;
+  final UserModel user;
   final AppLocalizations localizations;
   const _ContactInfoSection({
-    required this.userProfile,
+    required this.user,
     required this.localizations,
   });
 
@@ -329,9 +257,9 @@ class _ContactInfoSection extends ConsumerWidget {
     required String title,
     required String initialValue,
     required TextInputType keyboardType,
-    required void Function(String) onSave,
+    required Future<void> Function(String) onSave,
   }) async {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     final controller = TextEditingController(text: initialValue);
 
     await showModalBottomSheet(
@@ -349,7 +277,7 @@ class _ContactInfoSection extends ConsumerWidget {
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Form(
-                key: _formKey,
+                key: formKey,
                 child: TextFormField(
                   controller: controller,
                   keyboardType: keyboardType,
@@ -377,13 +305,13 @@ class _ContactInfoSection extends ConsumerWidget {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: kTerracotta,
+                        backgroundColor: AppColors.terracotta,
                       ),
                       child: Text(localizations.save),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          onSave(controller.text.trim());
-                          Navigator.pop(context);
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          await onSave(controller.text.trim());
+                          if (context.mounted) Navigator.pop(context);
                         }
                       },
                     ),
@@ -404,18 +332,19 @@ class _ContactInfoSection extends ConsumerWidget {
         _SettingsTile(
           icon: FontAwesomeIcons.solidEnvelope,
           title: localizations.email,
-          subtitle: userProfile.email,
+          subtitle: user.email,
           isLink: true,
-          onTap: () {
-            _showEditSheet(
+          onTap: () async {
+            await _showEditSheet(
               context,
               ref,
               title: localizations.email,
-              initialValue: userProfile.email,
+              initialValue: user.email,
               keyboardType: TextInputType.emailAddress,
-              onSave: (val) {
-                final notifier = ref.read(userProfileProvider);
-                notifier.value = notifier.value.copyWith(email: val);
+              onSave: (val) async {
+                final updated = user.copyWith(email: val);
+                await ProfileRepository.instance.updateProfile(updated, previousEmail: user.email);
+                ref.read(currentUserNotifierProvider.notifier).refresh();
               },
             );
           },
@@ -424,18 +353,19 @@ class _ContactInfoSection extends ConsumerWidget {
         _SettingsTile(
           icon: FontAwesomeIcons.phone,
           title: localizations.phone,
-          subtitle: userProfile.phone,
+          subtitle: user.phone,
           isLink: true,
-          onTap: () {
-            _showEditSheet(
+          onTap: () async {
+            await _showEditSheet(
               context,
               ref,
               title: localizations.phone,
-              initialValue: userProfile.phone,
+              initialValue: user.phone,
               keyboardType: TextInputType.phone,
-              onSave: (val) {
-                final notifier = ref.read(userProfileProvider);
-                notifier.value = notifier.value.copyWith(phone: val);
+              onSave: (val) async {
+                final updated = user.copyWith(phone: val);
+                await ProfileRepository.instance.updateProfile(updated, previousEmail: user.email);
+                ref.read(currentUserNotifierProvider.notifier).refresh();
               },
             );
           },
@@ -444,17 +374,18 @@ class _ContactInfoSection extends ConsumerWidget {
         _SettingsTile(
           icon: FontAwesomeIcons.locationDot,
           title: localizations.location,
-          subtitle: userProfile.location,
-          onTap: () {
-            _showEditSheet(
+          subtitle: user.location,
+          onTap: () async {
+            await _showEditSheet(
               context,
               ref,
               title: localizations.location,
-              initialValue: userProfile.location,
+              initialValue: user.location,
               keyboardType: TextInputType.text,
-              onSave: (val) {
-                final notifier = ref.read(userProfileProvider);
-                notifier.value = notifier.value.copyWith(location: val);
+              onSave: (val) async {
+                final updated = user.copyWith(location: val);
+                await ProfileRepository.instance.updateProfile(updated, previousEmail: user.email);
+                ref.read(currentUserNotifierProvider.notifier).refresh();
               },
             );
           },
@@ -472,7 +403,6 @@ class _SettingsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        // Theme Switcher
         ValueListenableBuilder<ThemeMode>(
           valueListenable: themeNotifier,
           builder: (context, mode, child) {
@@ -487,12 +417,12 @@ class _SettingsSection extends ConsumerWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2A2831) : kSand,
+                    color: isDark ? const Color(0xFF2A2831) : AppColors.sand,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     isDark ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
-                    color: isDark ? Colors.white : kTruffle,
+                    color: isDark ? Colors.white : AppColors.truffle,
                     size: 18,
                   ),
                 ),
@@ -552,7 +482,7 @@ class _SettingsTile extends StatefulWidget {
 }
 
 class _SettingsTileState extends State<_SettingsTile> {
-  bool _switchValue = true; // Local state for interactive demo
+  bool _switchValue = true;
 
   @override
   Widget build(BuildContext context) {
@@ -567,14 +497,14 @@ class _SettingsTileState extends State<_SettingsTile> {
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark
                 ? const Color(0xFF2A2831)
-                : kOyster,
+                : AppColors.oyster,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             widget.icon,
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white
-                : kTruffle,
+                : AppColors.truffle,
             size: 18,
           ),
         ),
@@ -598,7 +528,6 @@ class _SettingsTileState extends State<_SettingsTile> {
                 color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
         onTap: () {
-          // Custom onTap if provided
           if (widget.onTap != null) {
             widget.onTap!.call();
             return;
@@ -614,19 +543,23 @@ class _SettingsTileState extends State<_SettingsTile> {
   }
 }
 
-class _ActionButtons extends StatelessWidget {
+class _ActionButtons extends ConsumerWidget {
   final AppLocalizations localizations;
-  const _ActionButtons({required this.localizations});
+  final UserModel user;
+  const _ActionButtons({required this.localizations, required this.user});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () async {
+              await AuthRepository.instance.logout();
+              ref.read(currentUserNotifierProvider.notifier).refresh();
+            },
             style: ElevatedButton.styleFrom(
-              backgroundColor: kTerracotta,
+              backgroundColor: AppColors.terracotta,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               elevation: 0,

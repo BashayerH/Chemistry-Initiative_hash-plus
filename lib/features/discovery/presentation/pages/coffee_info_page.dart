@@ -18,7 +18,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
         _currentStep++;
       });
     } else {
-      // Reset to show all steps
       setState(() {
         _currentStep = _maxSteps;
       });
@@ -41,7 +40,7 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -50,7 +49,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Back Button
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
@@ -67,7 +65,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
                       ),
                     ),
 
-                    // Image Section
                     ClipRRect(
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
@@ -92,7 +89,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
                       ),
                     ),
 
-                    // Daily Magic Badge
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
@@ -122,7 +118,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
                       ),
                     ),
 
-                    // Main Title
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.0),
                       child: Text(
@@ -139,7 +134,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
 
                     const SizedBox(height: 24),
 
-                    // Info List
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Column(
@@ -166,21 +160,20 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
 
                     const SizedBox(height: 24),
 
-                    // Knowledge Box
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                            gradient: LinearGradient(
                             colors: [
-                              const Color(0xFF8B7355).withOpacity(0.1),
-                              const Color(0xFFA0826D).withOpacity(0.1),
+                              const Color(0xFF8B7355).withValues(alpha: 0.1),
+                              const Color(0xFFA0826D).withValues(alpha: 0.1),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFF8B7355).withOpacity(0.2),
+                            color: const Color(0xFF8B7355).withValues(alpha: 0.2),
                             width: 2,
                           ),
                         ),
@@ -227,7 +220,6 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
 
                     const SizedBox(height: 24),
 
-                    // CTA Button
                     Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: ElevatedButton(

@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:chemistry_initiative/pages/second_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chemistry_initiative/features/bookmark/data/bookmark_provider.dart';
+import 'package:chemistry_initiative/features/discovery/presentation/pages/question_page.dart';
 
-class BookmarkScreen extends StatefulWidget {
+class BookmarkScreen extends ConsumerWidget {
   const BookmarkScreen({super.key});
 
   @override
-  State<BookmarkScreen> createState() => _BookmarkScreenState();
-}
-
-class _BookmarkScreenState extends State<BookmarkScreen> {
-  // In a real app, this would come from a state management solution
-  final List<Map<String, String>> _bookmarkedTopics = [];
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     const darkBrown = Color(0xFF5A3E2B);
     const softBrown = Color(0xFF8C6B4F);
+    final bookmarks = ref.watch(bookmarkProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: _bookmarkedTopics.isEmpty
+        child: bookmarks.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +58,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                         ),
                         const Spacer(),
                         Text(
-                          '${_bookmarkedTopics.length}',
+                          '${bookmarks.length}',
                           style: TextStyle(
                             fontSize: 18,
                             color: softBrown,
@@ -76,9 +71,9 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _bookmarkedTopics.length,
+                      itemCount: bookmarks.length,
                       itemBuilder: (context, index) {
-                        final topic = _bookmarkedTopics[index];
+                        final topic = bookmarks[index];
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           shape: RoundedRectangleBorder(
@@ -89,7 +84,10 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const QuestionPage(),
+                                  builder: (context) => QuestionPage(
+                                    image: topic['image']!,
+                                    title: topic['title']!,
+                                  ),
                                 ),
                               );
                             },
@@ -146,11 +144,8 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                   icon: const Icon(Icons.delete_outline),
                                   color: Colors.red[300],
                                   onPressed: () {
-                                    setState(() {
-                                      _bookmarkedTopics.removeAt(index);
-                                    });
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(
+                                    ref.read(bookmarkProvider.notifier).remove(topic);
+                                    ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('تم حذف الموضوع'),
                                       ),

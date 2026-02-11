@@ -1,9 +1,14 @@
-import 'package:chemistry_initiative/pages/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'theme_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
+import 'package:chemistry_initiative/core/database/app_database.dart';
+import 'package:chemistry_initiative/core/theme/theme_controller.dart';
+import 'package:chemistry_initiative/features/auth/presentation/widgets/auth_guard.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppDatabase.instance.init();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -23,7 +28,7 @@ class MyApp extends StatelessWidget {
           ),
           darkTheme: ThemeData.dark(),
           themeMode: mode,
-          home: const LoginScreen(),
+          home: const AuthGuard(),
         );
       },
     );

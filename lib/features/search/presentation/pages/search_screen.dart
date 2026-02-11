@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:chemistry_initiative/pages/second_page.dart';
+import 'package:chemistry_initiative/features/discovery/presentation/pages/question_page.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -73,7 +73,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const darkBrown = Color(0xFF5A3E2B);
     const softBrown = Color(0xFF8C6B4F);
 
     return Scaffold(
@@ -81,7 +80,6 @@ class _SearchScreenState extends State<SearchScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search Bar
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
@@ -111,7 +109,6 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            // Results
             Expanded(
               child: _filteredTopics.isEmpty
                   ? Center(
@@ -148,7 +145,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const QuestionPage(),
+                                builder: (context) => QuestionPage(
+                                  image: topic['image']!,
+                                  title: topic['title']!,
+                                ),
                               ),
                             );
                           },
@@ -175,7 +175,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    Colors.black.withOpacity(0.7),
+                                    Colors.black.withValues(alpha: 0.7),
                                   ],
                                 ),
                               ),

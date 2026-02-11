@@ -1,14 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:country_picker/country_picker.dart';
-import 'profile_screen.dart'; // Import to access userProfileProvider
-import 'l10n/locale_provider.dart';
-import 'l10n/app_localizations.dart';
+
+import 'package:chemistry_initiative/core/database/models/user_model.dart';
+import 'package:chemistry_initiative/core/l10n/app_localizations.dart';
+import 'package:chemistry_initiative/core/l10n/locale_provider.dart';
+import 'package:chemistry_initiative/features/auth/data/current_user_provider.dart';
+import 'package:chemistry_initiative/features/profile/data/profile_repository.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   final ThemeMode currentThemeMode;
@@ -18,10 +20,19 @@ class EditProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
+ImageProvider _avatarImageProvider(String imageUrl) {
+  if (imageUrl.startsWith('assets/')) {
+    return AssetImage(imageUrl);
+  }
+  if (imageUrl.startsWith('http')) {
+    return AssetImage('assets/images/avatar.jpg'); // Network blocked; use local fallback
+  }
+  return FileImage(File(imageUrl));
+}
+
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
   late TextEditingController _nameController;
   late TextEditingController _bioController;
   late TextEditingController _emailController;
@@ -35,18 +46,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Use ref.read here because ref.watch depends on inherited widgets and
-    // shouldn't be called during initState.
-    final userProfileNotifier = ref.read(userProfileProvider);
-    final userProfile = userProfileNotifier.value;
-    _nameController = TextEditingController(text: userProfile.name);
-    _bioController = TextEditingController(text: userProfile.bio);
-    _emailController = TextEditingController(text: userProfile.email);
-    // Do not set text for phone controller here to avoid double country code in input.
-    // The InternationalPhoneNumberInput will handle it via initialValue.
+    final user = ref.read(currentUserNotifierProvider);
+    _nameController = TextEditingController(text: user?.name ?? '');
+    _bioController = TextEditingController(text: user?.bio ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
     _phoneController = TextEditingController();
-    _fullPhoneNumber = userProfile.phone;
-    _locationController = TextEditingController(text: userProfile.location);
+    _fullPhoneNumber = user?.phone ?? '';
+    _locationController = TextEditingController(text: user?.location ?? '');
   }
 
   Future<void> _pickImage() async {
@@ -71,9 +77,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final userProfileNotifier = ref.watch(userProfileProvider);
-    final userProfile = userProfileNotifier.value;
+    final user = ref.watch(currentUserNotifierProvider);
     final localizationAsync = ref.watch(localizationProvider);
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('يرجى تسجيل الدخول')),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -87,7 +98,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         title: localizationAsync.when(
           data: (localizations) => Text(
             localizations.editProfile,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               color: colorScheme.onSurface,
             ),
@@ -97,31 +108,38 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                final notifier = ref.read(userProfileProvider);
-                notifier.value = notifier.value.copyWith(
-                  name: _nameController.text,
-                  bio: _bioController.text,
-                  email: _emailController.text,
+                final updated = user.copyWith(
+                  name: _nameController.text.trim(),
+                  bio: _bioController.text.trim(),
+                  email: _emailController.text.trim(),
                   phone: _fullPhoneNumber,
-                  location: _locationController.text,
-                  imageUrl: _pickedImage?.path,
+                  location: _locationController.text.trim(),
+                  imageUrl: _pickedImage?.path ?? user.imageUrl,
                 );
+
+                await ProfileRepository.instance.updateProfile(
+                  updated,
+                  previousEmail: user.email,
+                );
+                ref.read(currentUserNotifierProvider.notifier).refresh();
 
                 final message = localizationAsync.maybeWhen(
                   data: (loc) => loc.profileUpdated,
                   orElse: () => 'Profile Updated!',
                 );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(message),
-                    backgroundColor: colorScheme.primary,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                Navigator.pop(context);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: colorScheme.primary,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  Navigator.pop(context);
+                }
               }
             },
             child: localizationAsync.when(
@@ -148,7 +166,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                // Profile Image Edit
                 Center(
                   child: Stack(
                     children: [
@@ -166,10 +183,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           backgroundColor: colorScheme.surfaceContainerHighest,
                           backgroundImage: _pickedImage != null
                               ? FileImage(_pickedImage!) as ImageProvider
-                              : (userProfile.imageUrl.startsWith('http')
-                                        ? NetworkImage(userProfile.imageUrl)
-                                        : FileImage(File(userProfile.imageUrl)))
-                                    as ImageProvider,
+                              : _avatarImageProvider(user.imageUrl),
                         ),
                       ),
                       Positioned(
@@ -200,7 +214,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Form Fields
                 _buildModernField(
                   controller: _nameController,
                   label: localizations.name,
@@ -229,7 +242,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
                 _buildPhoneField(
                   colorScheme: colorScheme,
-                  userProfile: userProfile,
+                  user: user,
                   localizations: localizations,
                 ),
                 const SizedBox(height: 20),
@@ -262,7 +275,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       children: [
         Text(
           label.toUpperCase(),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: colorScheme.outline,
@@ -282,7 +295,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             controller: controller,
             maxLines: maxLines,
             keyboardType: keyboardType,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               color: colorScheme.onSurface,
               fontSize: 15,
             ),
@@ -316,7 +329,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Widget _buildPhoneField({
     required ColorScheme colorScheme,
-    required UserProfile userProfile,
+    required UserModel user,
     required AppLocalizations localizations,
   }) {
     return Column(
@@ -324,7 +337,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       children: [
         Text(
           localizations.phone.toUpperCase(),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: colorScheme.outline,
@@ -355,12 +368,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             ignoreBlank: false,
             autoValidateMode: AutovalidateMode.disabled,
-            selectorTextStyle: GoogleFonts.poppins(
+            selectorTextStyle: TextStyle(
               color: colorScheme.onSurface,
             ),
             initialValue: PhoneNumber(
               isoCode: 'SA',
-              phoneNumber: userProfile.phone,
+              phoneNumber: user.phone,
             ),
             textFieldController: _phoneController,
             formatInput: true,
@@ -376,14 +389,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
-            textStyle: GoogleFonts.poppins(
+            textStyle: TextStyle(
               color: colorScheme.onSurface,
               fontSize: 15,
             ),
             cursorColor: colorScheme.primary,
             searchBoxDecoration: InputDecoration(
               labelText: 'Search',
-              labelStyle: GoogleFonts.poppins(
+              labelStyle: TextStyle(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
@@ -402,7 +415,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       children: [
         Text(
           localizations.location.toUpperCase(),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: colorScheme.outline,
@@ -423,7 +436,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               },
               countryListTheme: CountryListThemeData(
                 backgroundColor: colorScheme.surface,
-                textStyle: GoogleFonts.poppins(color: colorScheme.onSurface),
+                textStyle: TextStyle(color: colorScheme.onSurface),
                 bottomSheetHeight: 500,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
@@ -465,7 +478,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     _locationController.text.isNotEmpty
                         ? _locationController.text
                         : localizations.location,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       color: _locationController.text.isNotEmpty
                           ? colorScheme.onSurface
                           : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
