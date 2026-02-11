@@ -315,7 +315,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ContactInfoSection extends StatelessWidget {
+class _ContactInfoSection extends ConsumerWidget {
   final UserProfile userProfile;
   final AppLocalizations localizations;
   const _ContactInfoSection({
@@ -323,8 +323,82 @@ class _ContactInfoSection extends StatelessWidget {
     required this.localizations,
   });
 
+  Future<void> _showEditSheet(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required String initialValue,
+    required TextInputType keyboardType,
+    required void Function(String) onSave,
+  }) async {
+    final _formKey = GlobalKey<FormState>();
+    final controller = TextEditingController(text: initialValue);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: controller,
+                  keyboardType: keyboardType,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: title,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'هذا الحقل مطلوب';
+                    }
+                    if (keyboardType == TextInputType.emailAddress &&
+                        !RegExp(
+                          r"^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,}",
+                        ).hasMatch(v)) {
+                      return 'أدخل بريداً إلكترونياً صالحاً';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kTerracotta,
+                      ),
+                      child: Text(localizations.save),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          onSave(controller.text.trim());
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         _SettingsTile(
@@ -332,6 +406,19 @@ class _ContactInfoSection extends StatelessWidget {
           title: localizations.email,
           subtitle: userProfile.email,
           isLink: true,
+          onTap: () {
+            _showEditSheet(
+              context,
+              ref,
+              title: localizations.email,
+              initialValue: userProfile.email,
+              keyboardType: TextInputType.emailAddress,
+              onSave: (val) {
+                final notifier = ref.read(userProfileProvider);
+                notifier.value = notifier.value.copyWith(email: val);
+              },
+            );
+          },
         ),
         const SizedBox(height: 12),
         _SettingsTile(
@@ -339,12 +426,38 @@ class _ContactInfoSection extends StatelessWidget {
           title: localizations.phone,
           subtitle: userProfile.phone,
           isLink: true,
+          onTap: () {
+            _showEditSheet(
+              context,
+              ref,
+              title: localizations.phone,
+              initialValue: userProfile.phone,
+              keyboardType: TextInputType.phone,
+              onSave: (val) {
+                final notifier = ref.read(userProfileProvider);
+                notifier.value = notifier.value.copyWith(phone: val);
+              },
+            );
+          },
         ),
         const SizedBox(height: 12),
         _SettingsTile(
           icon: FontAwesomeIcons.locationDot,
           title: localizations.location,
           subtitle: userProfile.location,
+          onTap: () {
+            _showEditSheet(
+              context,
+              ref,
+              title: localizations.location,
+              initialValue: userProfile.location,
+              keyboardType: TextInputType.text,
+              onSave: (val) {
+                final notifier = ref.read(userProfileProvider);
+                notifier.value = notifier.value.copyWith(location: val);
+              },
+            );
+          },
         ),
       ],
     );
@@ -423,6 +536,7 @@ class _SettingsTile extends StatefulWidget {
   final String? subtitle;
   final bool isLink;
   final bool hasSwitch;
+  final VoidCallback? onTap;
 
   const _SettingsTile({
     required this.icon,
@@ -430,6 +544,7 @@ class _SettingsTile extends StatefulWidget {
     this.subtitle,
     this.isLink = false,
     this.hasSwitch = false,
+    this.onTap,
   });
 
   @override
@@ -483,7 +598,11 @@ class _SettingsTileState extends State<_SettingsTile> {
                 color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
         onTap: () {
-          // Add URL launching logic here if needed
+          // Custom onTap if provided
+          if (widget.onTap != null) {
+            widget.onTap!.call();
+            return;
+          }
           if (widget.hasSwitch) {
             setState(() {
               _switchValue = !_switchValue;
