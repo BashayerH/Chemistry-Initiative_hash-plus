@@ -244,7 +244,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 messenger.showSnackBar(const SnackBar(content: Text('بيانات الدخول غير صحيحة')));
                                 return;
                               }
-                              navigator.pushReplacement(MaterialPageRoute(builder: (context) => const HomePage()));
+                              navigator.pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => const HomePage(showWelcome: true),
+                                ),
+                              );
                             },
                           ),
                         ],
