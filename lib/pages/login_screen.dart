@@ -1,19 +1,58 @@
 import 'package:chemistry_initiative/pages/home_page.dart';
+import '../features/auth/auth_service.dart';
+import '../theme_controller.dart';
 import 'package:flutter/material.dart';
 import '../features/auth/presentation/widgets/custom_button.dart';
 import '../features/auth/presentation/widgets/custom_textfield.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailCtrl = TextEditingController();
+  final TextEditingController _passCtrl = TextEditingController();
+  final TextEditingController _nameCtrl = TextEditingController();
+  final TextEditingController _confirmCtrl = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  bool _isSignup = false;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _nameCtrl.dispose();
+    _confirmCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7F5), // خلفية هادئة نفس الصورة
+      backgroundColor: isLight ? const Color(0xFFFDF7F5) : Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             children: [
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.brightness_6, color: Theme.of(context).iconTheme.color),
+                    onPressed: () {
+                      themeNotifier.value = themeNotifier.value == ThemeMode.light
+                          ? ThemeMode.dark
+                          : ThemeMode.light;
+                    },
+                  ),
+                ],
+              ),
               // 1. الشعار والعنوان العلوي
               const CircleAvatar(
                 radius: 30,
@@ -36,7 +75,7 @@ class LoginScreen extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(25),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isLight ? Colors.white : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
@@ -51,39 +90,55 @@ class LoginScreen extends StatelessWidget {
                     // تبديل (تسجيل دخول - حساب جديد)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: isLight ? Colors.grey[100] : Colors.grey[800],
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [
                           Expanded(
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Text(
-                                  "حساب جديد",
-                                  style: TextStyle(color: Colors.grey),
+                            child: GestureDetector(
+                              onTap: () => setState(() => _isSignup = true),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: _isSignup ? (isLight ? Colors.white : Theme.of(context).cardColor) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Text(
+                                      "حساب جديد",
+                                      style: TextStyle(
+                                        color: _isSignup ? Theme.of(context).textTheme.bodyLarge?.color : Colors.grey,
+                                        fontWeight: _isSignup ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                           Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 5,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _isSignup = false),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: !_isSignup ? (isLight ? Colors.white : Theme.of(context).cardColor) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Text(
+                                      "تسجيل الدخول",
+                                      style: TextStyle(
+                                        color: !_isSignup ? Theme.of(context).textTheme.bodyLarge?.color : Colors.grey,
+                                        fontWeight: !_isSignup ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  "تسجيل الدخول",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
@@ -91,56 +146,121 @@ class LoginScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 18),
 
-                    // الحقول
-                    const Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        "البريد الإلكتروني",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const CustomTextfield(hintText: "example@email.com"),
+                    // form
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (_isSignup) ...[
+                            const Align(
+                              alignment: Alignment.centerRight,
+                              child: Text('الاسم الكامل', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(height: 8),
+                            CustomTextfield(hintText: 'الاسم الكامل', controller: _nameCtrl),
+                            const SizedBox(height: 12),
+                          ],
 
-                    const SizedBox(height: 20),
-
-                    const Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        "كلمة المرور",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const CustomTextfield(
-                      hintText: "********",
-                      isPassword: true,
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // زر الدخول
-                    CustomButton(
-                      text: "تسجيل الدخول",
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HomePage(),
+                          const Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "البريد الإلكتروني",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        );
-                        debugPrint("تم الضغط على دخول");
-                      },
+                          const SizedBox(height: 8),
+                          CustomTextfield(hintText: "example@email.com", controller: _emailCtrl),
+
+                          const SizedBox(height: 12),
+
+                          const Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "كلمة المرور",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          CustomTextfield(
+                            hintText: "********",
+                            isPassword: true,
+                            controller: _passCtrl,
+                          ),
+
+                          if (_isSignup) ...[
+                            const SizedBox(height: 12),
+                            const Align(
+                              alignment: Alignment.centerRight,
+                              child: Text('إعادة كلمة المرور', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(height: 8),
+                            CustomTextfield(hintText: '********', isPassword: true, controller: _confirmCtrl),
+                          ],
+
+                          const SizedBox(height: 18),
+
+                          CustomButton(
+                            text: _isSignup ? 'إنشاء حساب' : 'تسجيل الدخول',
+                            onTap: () async {
+                              final email = _emailCtrl.text.trim();
+                              final pass = _passCtrl.text;
+                              final messenger = ScaffoldMessenger.of(context);
+                              final navigator = Navigator.of(context);
+
+                              if (_isSignup) {
+                                final name = _nameCtrl.text.trim();
+                                final confirm = _confirmCtrl.text;
+                                if (name.isEmpty || email.isEmpty || pass.isEmpty || confirm.isEmpty) {
+                                  messenger.showSnackBar(const SnackBar(content: Text('يرجى ملء جميع الحقول')));
+                                  return;
+                                }
+                                if (pass != confirm) {
+                                  messenger.showSnackBar(const SnackBar(content: Text('كلمة المرور غير متطابقة')));
+                                  return;
+                                }
+                                final err = await AuthService.registerUser(name, email, pass);
+                                if (!mounted) return;
+                                if (err != null) {
+                                  messenger.showSnackBar(SnackBar(content: Text(err)));
+                                  return;
+                                }
+                                messenger.showSnackBar(const SnackBar(content: Text('تم إنشاء الحساب')));
+                                setState(() => _isSignup = false);
+                                return;
+                              }
+
+                              // Login flow
+                              if (email.isEmpty || pass.isEmpty) {
+                                messenger.showSnackBar(const SnackBar(content: Text('يرجى إدخال البريد وكلمة المرور')));
+                                return;
+                              }
+                              messenger.showSnackBar(const SnackBar(content: Text('جاري التحقق...')));
+                              final ok = await AuthService.loginUser(email, pass);
+                              if (!mounted) return;
+                              if (!ok) {
+                                messenger.showSnackBar(const SnackBar(content: Text('بيانات الدخول غير صحيحة')));
+                                return;
+                              }
+                              navigator.pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => const HomePage(showWelcome: true),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
-              const Text("أو", style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 20),
+              const Center(child: Text('أو', style: TextStyle(color: Colors.grey))),
+              const SizedBox(height: 12),
 
               // أزرار جوجل وفيسبوك
               socialButton("متابعة مع جوجل", Icons.g_mobiledata, Colors.red),

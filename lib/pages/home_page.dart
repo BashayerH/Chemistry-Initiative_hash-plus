@@ -1,26 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:chemistry_initiative/pages/second_page.dart';
+import 'package:chemistry_initiative/pages/profile_screen.dart';
+import 'package:chemistry_initiative/pages/search_screen.dart';
+import 'package:chemistry_initiative/pages/bookmark_screen.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool showWelcome;
+  const HomePage({super.key, this.showWelcome = false});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0; // Home tab is default
+  int _currentIndex = 0;
+  bool _showWelcome = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _showWelcome = widget.showWelcome;
+    if (_showWelcome) {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _showWelcome = false);
+      });
+    }
+  }
 
   Widget _getPage(int index) {
     switch (index) {
       case 0:
         return _buildHomeContent();
       case 1:
-        return const Center(child: Text('Search'));
+        return const SearchScreen();
       case 2:
-        return const Center(child: Text('Bookmark'));
+        return const BookmarkScreen();
       case 3:
-        return const Center(child: Text('Profile'));
+        return const ProfileScreen();
       default:
         return _buildHomeContent();
     }
@@ -43,22 +59,13 @@ class _HomePageState extends State<HomePage> {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bookmark),
             label: 'Bookmark',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -110,160 +117,187 @@ class _HomePageState extends State<HomePage> {
     const lightBackground = Color(0xFFEDE6D9); // خلفية شريط التقدم
 
     return SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // أيقونة البروفايل + الاسم + أيقونة الإشعارات
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: softBrown,
-                    child: const Icon(Icons.person, color: Colors.white),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'مرحبا ريوف',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: darkBrown,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // أيقونة البروفايل + الاسم + أيقونة الإشعارات
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: softBrown,
+                      child: const Icon(Icons.person, color: Colors.white),
                     ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.notifications,
-                      color: softBrown,
-                      size: 28,
+                    const SizedBox(width: 12),
+                    const Text(
+                      'مرحبا ريوف',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: darkBrown,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.notifications,
+                        color: softBrown,
+                        size: 28,
+                      ),
+                    ),
+                  ],
+                ),
 
-              const SizedBox(height: 35), // زيادة المسافة بين الابار والصورة
-              // الصورة الكبيرة مع العنوان وزر استكشف
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                const SizedBox(height: 35),
+                // الصورة الكبيرة مع العنوان وزر استكشف
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    left: 16,
-                    bottom: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ظاهرة الشفق القطبي',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 4,
-                                color: Colors.black54,
-                                offset: Offset(1, 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const QuestionPage(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: softBrown,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 10,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'استكشف أكثر',
+                    Positioned(
+                      left: 16,
+                      bottom: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'ظاهرة الشفق القطبي',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 30,
                               fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 4,
+                                  color: Colors.black54,
+                                  offset: Offset(1, 1),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 6),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const QuestionPage(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: softBrown,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              'استكشف أكثر',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 25),
-
-              // شريط التقدم + النسبة
-              const Text(
-                'مستوى تقدمك',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: darkBrown,
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: LinearProgressIndicator(
-                      value: progressValue,
-                      minHeight: 20,
-                      backgroundColor: lightBackground,
-                      color: darkBrown,
-                    ),
+                const SizedBox(height: 25),
+
+                // شريط التقدم + النسبة
+                const Text(
+                  'مستوى تقدمك',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: darkBrown,
                   ),
-                  Positioned.fill(
-                    child: Center(
-                      child: Text(
-                        '${(progressValue * 100).toInt()}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 8),
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: LinearProgressIndicator(
+                        value: progressValue,
+                        minHeight: 20,
+                        backgroundColor: lightBackground,
+                        color: darkBrown,
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Center(
+                        child: Text(
+                          '${(progressValue * 100).toInt()}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
+                  ],
+                ),
+                const SizedBox(height: 30),
 
-              sectionTitle('الطبيعة', darkBrown),
-              horizontalList(natureCards, darkBrown),
+                sectionTitle('الطبيعة', darkBrown),
+                horizontalList(natureCards, darkBrown),
 
-              const SizedBox(height: 16),
-              sectionTitle('الماء والهواء', darkBrown),
-              horizontalList(waterCards, darkBrown),
+                const SizedBox(height: 16),
+                sectionTitle('الماء والهواء', darkBrown),
+                horizontalList(waterCards, darkBrown),
 
-              const SizedBox(height: 16),
-              sectionTitle('الحياة اليومية', darkBrown),
-              horizontalList(dailyCards, darkBrown),
-            ],
+                const SizedBox(height: 16),
+                sectionTitle('الحياة اليومية', darkBrown),
+                horizontalList(dailyCards, darkBrown),
+              ],
+            ),
           ),
-        ),
-      );
+          // Welcome overlay
+          if (_showWelcome)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black45,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'أهلاً بك في عجائب الكيمياء',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget sectionTitle(String title, Color color) {
@@ -317,7 +351,7 @@ class _HomePageState extends State<HomePage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.normal, // غير بولد
+                    fontWeight: FontWeight.normal,
                     color: textColor,
                   ),
                 ),
