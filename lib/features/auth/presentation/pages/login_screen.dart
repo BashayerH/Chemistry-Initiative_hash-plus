@@ -1,7 +1,7 @@
-import 'package:chemistry_initiative/pages/home_page.dart';
 import 'package:flutter/material.dart';
-import '../features/auth/presentation/widgets/custom_button.dart';
-import '../features/auth/presentation/widgets/custom_textfield.dart';
+import '../../../../pages/home_page.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_textfield.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
