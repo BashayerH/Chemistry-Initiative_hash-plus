@@ -81,45 +81,49 @@ class ProfileScreen extends ConsumerWidget {
     final localizationAsync = ref.watch(localizationProvider);
 
     return localizationAsync.when(
-      data: (localizations) => Directionality(
-        textDirection: localizations.textDirection,
-        child: Scaffold(
-          backgroundColor: colorScheme.surface,
-          body: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              _ProfileSliverAppBar(
-                userProfile: userProfile,
-                localizations: localizations,
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      _SectionHeader(title: localizations.contactInfo),
-                      const SizedBox(height: 10),
-                      _ContactInfoSection(
-                        userProfile: userProfile,
-                        localizations: localizations,
-                      ),
-                      const SizedBox(height: 30),
-                      _SectionHeader(title: localizations.settings),
-                      const SizedBox(height: 10),
-                      _SettingsSection(localizations: localizations),
-                      const SizedBox(height: 40),
-                      _ActionButtons(localizations: localizations),
-                      const SizedBox(height: 50),
-                    ],
+      data: (localizations) {
+        // Force Arabic only for this page
+        final localizationsAr = AppLocalizations(const Locale('ar'));
+        return Directionality(
+          textDirection: localizationsAr.textDirection,
+          child: Scaffold(
+            backgroundColor: colorScheme.surface,
+            body: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _ProfileSliverAppBar(
+                  userProfile: userProfile,
+                  localizations: localizationsAr,
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        _SectionHeader(title: localizationsAr.contactInfo),
+                        const SizedBox(height: 10),
+                        _ContactInfoSection(
+                          userProfile: userProfile,
+                          localizations: localizationsAr,
+                        ),
+                        const SizedBox(height: 30),
+                        _SectionHeader(title: localizationsAr.settings),
+                        const SizedBox(height: 10),
+                        _SettingsSection(localizations: localizationsAr),
+                        const SizedBox(height: 40),
+                        _ActionButtons(localizations: localizationsAr),
+                        const SizedBox(height: 50),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text('Error: $err')),
     );
