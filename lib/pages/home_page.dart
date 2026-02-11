@@ -1,11 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:chemistry_initiative/pages/second_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0; // Home tab is default
+
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return _buildHomeContent();
+      case 1:
+        return const Center(child: Text('Search'));
+      case 2:
+        return const Center(child: Text('Bookmark'));
+      case 3:
+        return const Center(child: Text('Profile'));
+      default:
+        return _buildHomeContent();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: _getPage(_currentIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: const Color(0xFFF9F4EA), // OYSTER
+        selectedItemColor: const Color(0xFFC47457), // TERRACOTTA
+        unselectedItemColor: const Color(0xFF9C9E80), // SAGE
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark),
+            label: 'Bookmark',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeContent() {
     final double progressValue = 0.6;
 
     final List<Map<String, String>> natureCards = [
@@ -50,9 +109,7 @@ class HomePage extends StatelessWidget {
     const softBrown = Color(0xFF8C6B4F); // الأيقونات وزر الاستكشاف
     const lightBackground = Color(0xFFEDE6D9); // خلفية شريط التقدم
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -206,8 +263,7 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget sectionTitle(String title, Color color) {
