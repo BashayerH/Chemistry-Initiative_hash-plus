@@ -1,5 +1,3 @@
-import 'package:chemistry_initiative/pages/home_page.dart';
-import 'package:chemistry_initiative/pages/second_page.dart';
 import 'package:chemistry_initiative/pages/login_screen.dart';
 import 'package:flutter/material.dart';
 
