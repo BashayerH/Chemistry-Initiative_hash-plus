@@ -1,3 +1,5 @@
+import 'package:chemistry_initiative/pages/home_page.dart';
+import 'package:chemistry_initiative/pages/second_page.dart';
 import 'package:chemistry_initiative/pages/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +14,48 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const HomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'حي الله المبرمجين',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'مبادرة هاش ',
+              style: TextStyle(fontSize: 20, color: Colors.grey[700]),
+            ),
+          ],
+        ),
+      ),
       home: LoginScreen(),
     );
   }
