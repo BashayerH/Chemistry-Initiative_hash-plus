@@ -1,6 +1,6 @@
+import 'package:chemistry_initiative/splash_screen1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
