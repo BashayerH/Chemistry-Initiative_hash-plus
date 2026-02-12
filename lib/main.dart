@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Chemistry Initiative',
+      title: 'Chemistry -Initiative',
       theme: ThemeData(
         // Using the "Warm Chocolate" palette from the splash screen
         colorScheme: ColorScheme.fromSeed(
