@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:chemistry_initiative/features/auth/data/current_user_provider.dart';
 import 'package:chemistry_initiative/features/discovery/presentation/pages/question_page.dart';
+import 'package:chemistry_initiative/features/discovery/presentation/pages/coffee_info_page.dart';
 import 'package:chemistry_initiative/features/search/presentation/pages/search_screen.dart';
 import 'package:chemistry_initiative/features/bookmark/presentation/pages/bookmark_screen.dart';
 import 'package:chemistry_initiative/features/profile/presentation/pages/profile_screen.dart';
@@ -104,16 +105,32 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
     ];
 
-    final List<Map<String, String>> dailyCards = [
-      {'image': 'assets/images/欧包 by vcg-ailsapan.jpg', 'title': 'تخمير الخبز'},
+    final List<Map<String, dynamic>> dailyCards = [
+      {
+        'image': 'assets/images/欧包 by vcg-ailsapan.jpg',
+        'title': 'تخمير الخبز',
+        'type': 'question',
+      },
       {
         'image': 'assets/images/Carbon Quantum Dots.jpg',
         'title': 'المعامل الطبية',
+        'type': 'question',
       },
-      {'image': 'assets/images/Handmade.jpg', 'title': 'الأدوية'},
+      {
+        'image': 'assets/images/Handmade.jpg',
+        'title': 'الأدوية',
+        'type': 'question',
+      },
       {
         'image': 'assets/images/michael-glazier-5q5K8Q3x6e4-unsplash.jpg',
         'title': 'الاشتعال',
+        'type': 'question',
+      },
+      {
+        'image':
+            'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop',
+        'title': 'رائحة القهوة',
+        'type': 'coffee',
       },
     ];
 
@@ -146,7 +163,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                     const Spacer(),
-                  
                   ],
                 ),
 
@@ -190,7 +206,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => QuestionPage(
-                                    image: 'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
+                                    image:
+                                        'assets/images/Aurora Boreal Aesthetic _ Travel Inspo & Dream Destinations.jpg',
                                     title: 'ظاهرة الشفق القطبي',
                                   ),
                                 ),
@@ -277,7 +294,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 16),
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -286,7 +305,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       'أهلاً بك في عجائب الكيمياء',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -311,7 +332,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget horizontalList(List<Map<String, String>> cards, Color textColor) {
+  Widget horizontalList(List<Map<String, dynamic>> cards, Color textColor) {
     return SizedBox(
       height: 180,
       child: ListView.builder(
@@ -319,17 +340,28 @@ class _HomePageState extends ConsumerState<HomePage> {
         itemCount: cards.length,
         itemBuilder: (context, index) {
           final card = cards[index];
+          final String cardType = card['type'] ?? 'question';
+
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => QuestionPage(
-                    image: card['image']!,
-                    title: card['title']!,
+              if (cardType == 'coffee') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CoffeeInfoPage(),
                   ),
-                ),
-              );
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuestionPage(
+                      image: card['image']!,
+                      title: card['title']!,
+                    ),
+                  ),
+                );
+              }
             },
             child: Container(
               width: 140,
@@ -342,7 +374,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         image: DecorationImage(
-                          image: AssetImage(card['image']!),
+                          image: card['image']!.startsWith('http')
+                              ? NetworkImage(card['image']!) as ImageProvider
+                              : AssetImage(card['image']!),
                           fit: BoxFit.cover,
                         ),
                         boxShadow: const [

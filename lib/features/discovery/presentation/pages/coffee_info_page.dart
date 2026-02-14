@@ -160,60 +160,74 @@ class _CoffeeInfoPageState extends State<CoffeeInfoPage>
 
                     const SizedBox(height: 24),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF8B7355).withValues(alpha: 0.1),
-                              const Color(0xFFA0826D).withValues(alpha: 0.1),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0xFF8B7355).withValues(alpha: 0.2),
-                            width: 2,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                    AnimatedOpacity(
+                      opacity: _currentStep >= 4 ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        height: _currentStep >= 4 ? null : 0,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(
+                                    0xFF8B7355,
+                                  ).withValues(alpha: 0.1),
+                                  const Color(
+                                    0xFFA0826D,
+                                  ).withValues(alpha: 0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFF8B7355,
+                                ).withValues(alpha: 0.2),
+                                width: 2,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF8B7355),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    '💡',
-                                    style: TextStyle(fontSize: 20),
-                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF8B7355),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        '💡',
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Text(
+                                      'هل تعلم؟',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(height: 12),
                                 const Text(
-                                  'هل تعلم؟',
+                                  'يمكن لرائحة القهوة أن تجعلك تشعر بمزيد من اليقظة حتى قبل أن تشربها! يتعرف دماغك على الرائحة ويبدأ في تحضير جسمك للكافيين!',
                                   style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2C3E50),
+                                    fontSize: 16,
+                                    color: Color(0xFF555555),
+                                    height: 1.6,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'يمكن لرائحة القهوة أن تجعلك تشعر بمزيد من اليقظة حتى قبل أن تشربها! يتعرف دماغك على الرائحة ويبدأ في تحضير جسمك للكافيين!',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF555555),
-                                height: 1.6,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
